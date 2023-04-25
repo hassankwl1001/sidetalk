@@ -50,63 +50,70 @@ class PostsController extends Controller
         ]);
         DB::beginTransaction();
         try{
-        $postType = $this->singleModel->postType->where('name', $request->input('post_type'))->first();
-        $request['post_type_id'] = $postType->id;
-
-        $postPrivacy = $this->singleModel->postPrivacy->where('name', $request->input('privacy'))->first();
-        $request['post_privacy_id'] = $postPrivacy->id;
+            $postType = $this->singleModel->postType->where('name', $request->input('post_type'))->first();
+            if (isset($postType->id)){
+                $request['post_type_id'] = $postType->id;
+            }else{
+                $postType = \App\Models\postType::insert([
+                    "name" => $request->input('post_type')
+                ]);
+                $request['post_type_id'] = $postType->id;
+            }
+            
+            $postPrivacy = $this->singleModel->postPrivacy->where('name', $request->input('privacy'))->first();
+            $request['post_privacy_id'] = $postPrivacy->id;
             if ($postType->name == 'Job'){
                 $request["heading"] = $request->job_title;
             }
 
-        $post = auth()->user()->posts()->create($request->all());
+            $post = auth()->user()->posts()->create($request->all());
 
-        if ($postType->name != 'Job') {
+            if ($postType->name != 'Job') {
 
-            if ($request->hasFile('file')) {
-                $fileArray = [];
-                foreach ($request->file('file') as $file) {
+                if ($request->hasFile('file')) {
+                    $fileArray = [];
+                    foreach ($request->file('file') as $file) {
 
-                    $filNameWithExtention = $file->getClientOriginalName();
+                        $filNameWithExtention = $file->getClientOriginalName();
+                        $fileName = pathinfo($filNameWithExtention, PATHINFO_FILENAME);
+                        $extention = $file->getClientOriginalExtension();
+                        $image = trim(str_replace(' ', '', $fileName . '_' . time() . '.' . $extention));
+                        str_replace(' ', '', $image);
+                        $path = $file->storeAs('media', $image);
+                        // $path = $file->storeAs('media', $image, 's3');
+                        // Storage::disk('s3')->setVisibility($path, 'public');
+
+                        $fileArray[] = [
+                            'name' => $image
+                        ];
+                    }
+                    $post->postMedia()->createMany($fileArray);
+                }
+
+            } else {
+                if ($request->has('file')) {
+
+                    $filNameWithExtention = $request->file('file')->getClientOriginalName();
                     $fileName = pathinfo($filNameWithExtention, PATHINFO_FILENAME);
-                    $extention = $file->getClientOriginalExtension();
+                    $extention = $request->file('file')->getClientOriginalExtension();
                     $image = trim(str_replace(' ', '', $fileName . '_' . time() . '.' . $extention));
                     str_replace(' ', '', $image);
-                    $path = $file->storeAs('media', $image);
-                    // $path = $file->storeAs('media', $image, 's3');
+                    $path = $request->file('file')->storeAs('media', $image);
+                    // $path = $request->file('file')->storeAs('media', $image, 's3');
                     // Storage::disk('s3')->setVisibility($path, 'public');
-
-                    $fileArray[] = [
+                    $fileArray = [
                         'name' => $image
                     ];
+
+                    $post->postMedia()->create($fileArray);
+
+                    $request['job_poster'] = $image;
+
                 }
-                $post->postMedia()->createMany($fileArray);
+                $post->jobs()->create($request->all());
             }
-
-        } else {
-            if ($request->has('file')) {
-
-                $filNameWithExtention = $request->file('file')->getClientOriginalName();
-                $fileName = pathinfo($filNameWithExtention, PATHINFO_FILENAME);
-                $extention = $request->file('file')->getClientOriginalExtension();
-                $image = trim(str_replace(' ', '', $fileName . '_' . time() . '.' . $extention));
-                str_replace(' ', '', $image);
-                $path = $request->file('file')->storeAs('media', $image);
-                // $path = $request->file('file')->storeAs('media', $image, 's3');
-                // Storage::disk('s3')->setVisibility($path, 'public');
-                $fileArray = [
-                    'name' => $image
-                ];
-
-                $post->postMedia()->create($fileArray);
-
-                $request['job_poster'] = $image;
-
-            }
-            $post->jobs()->create($request->all());
-        }
-        DB::commit();
-        return redirect()->back()->with(['success' => 'Post created successfully']);
+            DB::commit();
+            return redirect()->back()->with(['success' => 'Post created successfully']);
         }catch(\Exception $e){
             DB::rollBack();
             return redirect()->back()->with(['error' => 'Unable to create post. something went wrong']);

@@ -12,11 +12,14 @@ use App\Traits\CheckFriendTrait;
 use Illuminate\Support\Facades\DB;
 use App\Models\Friend;
 use App\Models\Skill;
+use App\Traits\NotificationTrait;
+use App\Events\GeneralEvent;
 
 
 class UserController extends Controller
 {
 
+    use NotificationTrait;
     use CheckFriendTrait;
 
     public function __construct(iUnitOfWork $unitOfWork, iSingleModelRepository $singleModel)
@@ -28,6 +31,7 @@ class UserController extends Controller
     {
         //Getting Friends List
         $friends_ids = [];
+        $other_user_id = $id;
         $friends = Friend::where(function ($query) {
             $query->where('request_to', auth()->id())
                 ->orWhere('request_from', auth()->id());
@@ -129,6 +133,25 @@ class UserController extends Controller
         }
 
         $posts = $all_posts;
+
+        $name = auth()->user()->name;
+        $notification = [
+            'user_id' => $other_user_id,
+            'other_user_id' => auth()->user()->id,
+            'text' => $name . ' See your profile',
+            'url'=> url("user/profile/".auth()->user()->id)
+        ];
+
+        $data = [
+            'action' => 'PROFILE',
+            'text' => $name . 'See your profile'
+        ];
+
+
+        if($other_user_id != auth()->user()->id){
+            $this->storeNotification($notification);
+            event(new GeneralEvent($data, $other_user_id));
+        }
 
         return view('visitUserProfile')->with(compact('profileUrl', 'totalPages','follows','employeeTypes', 'experiences', 'posts', 'urlPost', 'urlProfile', 'user', 'is_friend', 'totalReflections','totalRating','engagement', 'contentView'));
     }

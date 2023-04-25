@@ -96,15 +96,26 @@
                         </header>
                         <div class="Introduction-details">
                             <small>Company</small>
-                            <h2>{{ auth()->user()->recent_company }}</h2>
+                            @php
+                               $ids =\App\Models\Company::where("id", auth()->user()->company_id)->first();
+                               $company = (auth()->user()->recent_company=="") ? $ids->name : auth()->user()->recent_company;
+                           @endphp
+                            <h2>{{ $company }}</h2>
                         </div>
                         <div class="Introduction-details">
                             <small>Work Location</small>
-                            <h2>{{ auth()->user()->work_location }}</h2>
-                        </div>
+                            @php
+                                $location = (auth()->user()->work_location=="") ? auth()->user()->city : auth()->user()->work_location;
+                            @endphp
+                            <h2>{{ $location }}</h2>
+                        </div> 
                         <div class="Introduction-details">
                             <small>Type of Industry</small>
-                            <h2>{{ auth()->user()->industry }}</h2>
+                           @php
+                               $ids =\App\Models\IndustryTypes::where("id", auth()->user()->industry_type_id)->first();
+                               $industry = (auth()->user()->industry=="") ? $ids->name : auth()->user()->industry;
+                           @endphp
+                            <h2>{{ $industry }}</h2>
                         </div>
                         <div class="Introduction-details">
                             <small>Industry Sub Category</small>
