@@ -11,6 +11,8 @@
             position: relative;
             z-index: 2;
         }
+        body{overflow: auto !important;}
+        .signup__content{margin-bottom: 100px !important;}
     </style>
 <main class="signup__content">
     <div class="header__logo">
@@ -60,11 +62,13 @@
         <div class="login__form_action_container text-center">
           <p>or</p>
         </div>
-        <div class="login__form_action_container login__form_action_container--multiple-actions">
-          <a  href="{{route('login.google')}}" class="btn__secondary--large from__button--floating" aria-label="Join Google" style="margin-bottom: 0px;"><img src="{{('assets/img/google-icon.png')}}" alt="google-icon" />Continue with Google</a>
-        </div>
-        <div class="login__form_action_container login__form_action_container--multiple-actions">
-          <a  href="{{route('login.facebook')}}" class="btn__secondary--large from__button--floating" aria-label="Join Facebook"><img src="{{('assets/img/facebook-icon.png')}}" alt="facebook-icon" style="width:20px;"/>Continue with Facebook</a>
+        <div class="d-flex justify-content-between align-items-center">
+          <div class="login__form_action_container login__form_action_container--multiple-actions" style="flex:1;margin-right:5px;">
+            <a  href="{{route('login.google')}}" class="btn__secondary--large from__button--floating d-flex justify-content-center align-items-center" aria-label="Join Google" style="margin:0px;"><img src="{{url('assets/img/google-icon.png')}}" alt="google-icon" />Continue with Google</a>
+          </div>
+          <div class="login__form_action_container login__form_action_container--multiple-actions" style="flex:1">
+            <a  href="{{route('login.facebook')}}" class="btn__secondary--large from__button--floating d-flex justify-content-center align-items-center" aria-label="Join Facebook"><img src="{{url('assets/img/facebook-icon.png')}}" alt="facebook-icon" style="width:20px;"/>Continue with Facebook</a>
+          </div>
         </div>
         <div class="footer-app-content-actions">
           @if (Route::has('password.request'))

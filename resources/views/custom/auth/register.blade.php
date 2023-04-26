@@ -105,6 +105,8 @@
                 transform: translate(19px, 0);
             }
         }
+        body{overflow: auto !important;}
+        .signup__content{margin-bottom:0px !important;}
     </style>
 
     <div class="loading-page1" id="loading-page1" style="display: none;">
@@ -317,6 +319,20 @@
                      @endif               
                     </select>
                 </div>
+                <div class="form__input--floating">
+                    <label class="form__label--floating" id="label--role">Your Role<span>*</span></label>
+                   
+                    <select class="" id="input--role"  name="job_role" required>
+                        <option value="" selected>Select your role</option>
+                        @php
+                            $roles = DB::table("company_roles")->orderBy("name", "asc")->get();
+                        @endphp
+                        @foreach($roles as $role)
+                            <option value="{{$role->id}}">{{$role->name}}</option>
+                        @endforeach
+                    </select>
+                </div>
+                
                 {{-- <div class="form__input--floating">
                     <label class="form__label--floating" id="label--company">Most recent company <span>*</span></label>
                     <input id="input--company" type="text" placeholder="" value="{{old('recent_company')}}"

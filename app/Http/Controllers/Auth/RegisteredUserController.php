@@ -133,7 +133,9 @@ class RegisteredUserController extends Controller
         } else {
             $request["company_id"]= (int)$request["company_id"];   
         }
-       
+        
+        
+
         $user = User::create($request->all());
         
         if (isset($industryType)) {
